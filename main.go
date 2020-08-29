@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/Natthapong/gofinal/customer"
+	"github.com/Natthapong/gofinal/database"
 	"github.com/Natthapong/gofinal/middleware"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -26,7 +27,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Connect to database error", err)
 	}
-	customer.CreateDatabaseCustomer(db)
+	database.CreateDatabaseCustomer(db)
 
 	h := customer.Handler{DB: db}
 	r := gin.Default()
