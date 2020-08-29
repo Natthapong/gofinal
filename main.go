@@ -1,7 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"database/sql"
+	"log"
+	"os"
 
 	"github.com/Natthapong/gofinal/customer"
 	"github.com/Natthapong/gofinal/middleware"
@@ -9,20 +11,26 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func setupRouter() *gin.Engine {
-	r := gin.Default()
+func setupRouter(r *gin.Engine, h customer.Handler) *gin.Engine {
 	r.Use(middleware.Auth)
-	r.POST("/customers", customer.CreateCustomerHandler)
-	r.GET("/customers/:id", customer.FindOneCustomerHandler)
-	r.GET("/customers", customer.FindAllCustomerHandler)
-	r.PUT("/customers/:id", customer.UpdateCustomerHandler)
-	r.DELETE("/customers/:id", customer.DeleteCustomerHandler)
+	r.POST("/customers", h.CreateCustomerHandler)
+	r.GET("/customers/:id", h.FindOneCustomerHandler)
+	r.GET("/customers", h.FindAllCustomerHandler)
+	r.PUT("/customers/:id", h.UpdateCustomerHandler)
+	r.DELETE("/customers/:id", h.DeleteCustomerHandler)
 	return r
 }
 
 func main() {
-	customer.CreateDatabaseCustomer()
-	r := setupRouter()
+	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal("Connect to database error", err)
+	}
+	customer.CreateDatabaseCustomer(db)
+
+	h := customer.Handler{DB: db}
+	r := gin.Default()
+
+	r = setupRouter(r, h)
 	r.Run(":2009")
-	fmt.Println("customer service")
 }

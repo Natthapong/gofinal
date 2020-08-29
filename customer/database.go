@@ -1,6 +1,9 @@
 package customer
 
-import "log"
+import (
+	"database/sql"
+	"log"
+)
 
 type Customer struct {
 	ID     int    `json:"id"`
@@ -9,7 +12,7 @@ type Customer struct {
 	Status string `json:"status"`
 }
 
-func CreateDatabaseCustomer() {
+func CreateDatabaseCustomer(db *sql.DB) {
 	createTb := `
 		CREATE TABLE IF NOT EXISTS customers (
 		id SERIAL PRIMARY KEY, 
@@ -24,7 +27,7 @@ func CreateDatabaseCustomer() {
 	}
 }
 
-func insertCustomer(cust *Customer) (id int) {
+func insertCustomer(db *sql.DB, cust *Customer) (id int) {
 	row := db.QueryRow("INSERT INTO customers (name, email, status) values ($1, $2, $3) RETURNING id", cust.Name, cust.Email, cust.Status)
 	err := row.Scan(&id)
 	if err != nil {
@@ -33,7 +36,7 @@ func insertCustomer(cust *Customer) (id int) {
 	return
 }
 
-func findCustomerByID(id int) (cust Customer) {
+func findCustomerByID(db *sql.DB, id int) (cust Customer) {
 	cust = Customer{}
 	stmt, err := db.Prepare("SELECT id, name, email, status FROM customers where id=$1")
 	if err != nil {
@@ -47,7 +50,7 @@ func findCustomerByID(id int) (cust Customer) {
 	return
 }
 
-func findCustomers() (customers []Customer) {
+func findCustomers(db *sql.DB) (customers []Customer) {
 	customers = []Customer{}
 	stmt, err := db.Prepare("SELECT id, name, email, status FROM customers")
 	if err != nil {
@@ -68,7 +71,7 @@ func findCustomers() (customers []Customer) {
 	return
 }
 
-func updateCustomer(id int, name, email, status string) (cust Customer) {
+func updateCustomer(db *sql.DB, id int, name, email, status string) (cust Customer) {
 	stmt, err := db.Prepare("UPDATE customers SET name=$2, email=$3, status=$4 WHERE id=$1")
 	if err != nil {
 		log.Fatal("Error can't prepare statment update", err)
@@ -76,11 +79,11 @@ func updateCustomer(id int, name, email, status string) (cust Customer) {
 	if _, err := stmt.Exec(id, name, email, status); err != nil {
 		log.Println("Error execute update ", err)
 	}
-	cust = findCustomerByID(id)
+	cust = findCustomerByID(db, id)
 	return cust
 }
 
-func deleteCustomer(id int) (err error) {
+func deleteCustomer(db *sql.DB, id int) (err error) {
 	stmt, err := db.Prepare("DELETE FROM customers WHERE id=$1")
 	if err != nil {
 		log.Fatal("Error can't prepare statment delete", err)

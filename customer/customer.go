@@ -2,70 +2,60 @@ package customer
 
 import (
 	"database/sql"
-	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
 )
 
 type Message struct {
 	Message string `json:"message"`
 }
 
-var db *sql.DB
-
-func init() {
-	var err error
-	db, err = sql.Open("postgres", os.Getenv("DATABASE_URL"))
-	if err != nil {
-		log.Fatal("Connect to database error", err)
-	}
-	//defer db.Close()
+type Handler struct {
+	DB *sql.DB
 }
 
-func CreateCustomerHandler(c *gin.Context) {
+func (h *Handler) CreateCustomerHandler(c *gin.Context) {
 	cust := Customer{}
 	if err := c.ShouldBindJSON(&cust); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
-	id := insertCustomer(&cust)
+	id := insertCustomer(h.DB, &cust)
 	cust.ID = id
 	c.JSON(http.StatusCreated, cust)
 }
 
-func FindOneCustomerHandler(c *gin.Context) {
+func (h *Handler) FindOneCustomerHandler(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 	}
-	cust := findCustomerByID(id)
+	cust := findCustomerByID(h.DB, id)
 	c.JSON(http.StatusOK, &cust)
 }
 
-func FindAllCustomerHandler(c *gin.Context) {
-	cust := findCustomers()
+func (h *Handler) FindAllCustomerHandler(c *gin.Context) {
+	cust := findCustomers(h.DB)
 	c.JSON(http.StatusOK, &cust)
 }
 
-func UpdateCustomerHandler(c *gin.Context) {
+func (h *Handler) UpdateCustomerHandler(c *gin.Context) {
 	cust := Customer{}
 	if err := c.ShouldBindJSON(&cust); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
-	cust = updateCustomer(cust.ID, cust.Name, cust.Email, cust.Status)
+	cust = updateCustomer(h.DB, cust.ID, cust.Name, cust.Email, cust.Status)
 	c.JSON(http.StatusOK, &cust)
 }
 
-func DeleteCustomerHandler(c *gin.Context) {
+func (h *Handler) DeleteCustomerHandler(c *gin.Context) {
 	msg := Message{}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 	}
-	errDelete := deleteCustomer(id)
+	errDelete := deleteCustomer(h.DB, id)
 	if errDelete == nil {
 		msg.Message = "customer deleted"
 	}
