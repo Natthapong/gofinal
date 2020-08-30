@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/Natthapong/gofinal/customer"
-	"github.com/Natthapong/gofinal/middleware"
+	"github.com/Natthapong/gofinal/customer_service/customer"
+	"github.com/Natthapong/gofinal/customer_service/middleware"
 	"github.com/gin-gonic/gin"
 )
 

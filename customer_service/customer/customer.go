@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Natthapong/gofinal/database"
+	"github.com/Natthapong/gofinal/customer_service/database"
 	"github.com/gin-gonic/gin"
 )
 

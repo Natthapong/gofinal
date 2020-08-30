@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/Natthapong/gofinal/api"
-	"github.com/Natthapong/gofinal/customer"
-	"github.com/Natthapong/gofinal/database"
+	"github.com/Natthapong/gofinal/customer_service/api"
+	"github.com/Natthapong/gofinal/customer_service/customer"
+	"github.com/Natthapong/gofinal/customer_service/database"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
